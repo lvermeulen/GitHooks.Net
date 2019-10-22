@@ -1,0 +1,22 @@
+#!/usr/bin/env dotnet dotnet-script
+
+#load "logger.csx"
+#load "git-commands.csx"
+#load "dotnet-commands.csx"
+
+// only run checks on changes that are a part of this commit; stash other changes
+GitCommands.StashChanges();
+
+int formatCode = DotnetCommands.FormatCode();
+int buildCode = DotnetCommands.BuildCode();
+int testCode = DotnetCommands.TestCode();
+
+// done with checks; unstash changes
+GitCommands.UnstashChanges();
+
+int exitCode = formatCode + buildCode + testCode;
+if (exitCode != 0)
+{
+    Logger.LogError("Failed to pass the checks");
+    Environment.Exit(-1);
+}
